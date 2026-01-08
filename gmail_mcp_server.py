@@ -46,6 +46,7 @@ logger = logging.getLogger("gmail-mcp-server")
 mcp = FastMCP("CL Gmail MCP Server")
 
 # Global service instance
+# We don't need this for Stateless Functioning
 _service = None
 
 
@@ -68,13 +69,13 @@ def _get_token_data(token_data: str) -> Dict:
 
 
 def _get_service(token_data: str):
-    """Create YouTube service with provided access token"""
+    """Create Gmail service with provided access token"""
     auth_data = _get_token_data(token_data)
-    logger.info("Creating YouTube API service with provided access token")
+    logger.info("Creating Gmail API service with provided access token")
     # Don't pass scopes - the token already has its authorized scopes
     creds = Credentials(**auth_data)
-    service = build("youtube", "v3", credentials=creds)
-    logger.info("YouTube API service created successfully")
+    service = build("gmail", "v1", credentials=creds)
+    logger.info("Gmail API service created successfully")
     return service
 
 
