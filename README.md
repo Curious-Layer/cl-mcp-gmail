@@ -106,7 +106,7 @@ python gmail_mcp_server.py --transport streamable-http --host 127.0.0.1 --port 8
 
 For **Claude Desktop**, add this to your MCP configuration file:
 
-**MacOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 **Windows**: `%APPDATA%/Claude/claude_desktop_config.json`
 
 ```json
