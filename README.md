@@ -2,6 +2,34 @@
 
 A Model Context Protocol (MCP) server that provides access to Gmail API endpoints.
 
+## Quick Start
+
+### How to Start This Server
+
+1. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+2. **Start the server (choose one method):**
+
+   - **Default (stdio mode)** - For MCP clients that communicate via stdin/stdout:
+     ```bash
+     python gmail_mcp_server.py
+     ```
+
+   - **SSE mode** - For Server-Sent Events over HTTP:
+     ```bash
+     python gmail_mcp_server.py --transport sse --host 127.0.0.1 --port 8080
+     ```
+
+   - **Streamable HTTP mode** - For HTTP streaming:
+     ```bash
+     python gmail_mcp_server.py --transport streamable-http --host 127.0.0.1 --port 8080
+     ```
+
+3. **Configure OAuth** - Each tool call requires an `oauth_token` parameter with your Google OAuth credentials. See the [Setup](#setup) section below for details.
+
 ## Features
 
 This MCP server provides the following Gmail operations:
@@ -53,24 +81,48 @@ You need to create OAuth credentials with the following scopes:
 
 Each tool requires an `oauth_token` parameter, which is a JSON string containing your access token and other necessary details. The `_get_token_data` function in the server script shows the expected format. It is recommended to use a separate script to handle the OAuth 2.0 flow to generate this token data.
 
-### 3. Configure Your MCP Client
+### 3. Start the Server
 
-The server can be run in different transport modes.
+The server can be run in different transport modes depending on your MCP client's requirements.
 
-**stdio (default)**:
+**stdio (default)** - Best for Claude Desktop and other local MCP clients:
 ```bash
 python gmail_mcp_server.py
 ```
 
-**SSE (Server-Sent Events)**:
+**SSE (Server-Sent Events)** - For web-based or remote MCP clients:
 ```bash
 python gmail_mcp_server.py --transport sse --host 127.0.0.1 --port 8080
 ```
 
-**Streamable HTTP**:
+**Streamable HTTP** - For HTTP-based MCP clients:
 ```bash
 python gmail_mcp_server.py --transport streamable-http --host 127.0.0.1 --port 8080
 ```
+
+> **Note:** Most users should start with the default stdio mode. Only use SSE or HTTP modes if your MCP client specifically requires them.
+
+### 4. Configure Your MCP Client
+
+For **Claude Desktop**, add this to your MCP configuration file:
+
+**MacOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+**Windows**: `%APPDATA%/Claude/claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "gmail": {
+      "command": "python",
+      "args": ["/absolute/path/to/gmail_mcp_server.py"]
+    }
+  }
+}
+```
+
+Replace `/absolute/path/to/gmail_mcp_server.py` with the actual path to the server script.
+
+For other MCP clients, refer to their documentation for how to configure MCP servers.
 
 ## Usage Examples
 
