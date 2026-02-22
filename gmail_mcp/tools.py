@@ -5,6 +5,8 @@ from email import encoders
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from pydantic import Field
+from typing import Optional
 
 from fastmcp import FastMCP
 
@@ -26,13 +28,10 @@ logger = logging.getLogger("gmail-mcp-server")
 
 
 def register_tools(mcp: FastMCP) -> None:
+
     @mcp.tool(name="get_profile", description="Get the user's Gmail profile information")
-    def get_profile(oauth_token: OAuthTokenData) -> ApiObjectResponse:
-        """Get authenticated Gmail profile information.
-
-        Args:
-            oauth_token: OAuth credentials object with token fields.
-
+    def get_profile(oauth_token: OAuthTokenData = Field(..., description="OAuth token")) -> ApiObjectResponse:
+        """
         Returns:
             Gmail profile object (e.g., email address, message/thread totals) or error.
         """
@@ -50,16 +49,9 @@ def register_tools(mcp: FastMCP) -> None:
         name="get_message", description="Get a specific message by ID with full details"
     )
     def get_message(
-        oauth_token: OAuthTokenData, message_id: str, format: str = "full"
+        oauth_token: OAuthTokenData = Field(..., description="OAuth token"), message_id: str = Field(..., description="Gmail message ID"), format: str = Field(default="full", description="Gmail message format common values: `minimal`, `full`, `raw`, `metadata`")
     ) -> ApiObjectResponse:
-        """Get a message by Gmail message ID.
-
-        Args:
-            oauth_token: OAuth credentials object with token fields.
-            message_id: Gmail message ID.
-            format: Gmail message format. Common values: `minimal`, `full`, `raw`,
-                `metadata`.
-
+        """
         Returns:
             Gmail message object in requested format or error.
         """
@@ -80,23 +72,14 @@ def register_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(name="send_message", description="Send an email message")
     def send_message(
-        oauth_token: OAuthTokenData,
-        to: str,
-        subject: str,
-        body: str,
-        cc: str = "",
+        oauth_token: OAuthTokenData = Field(..., description="OAuth token"),
+        to: str = Field(..., description="Recipient email address"),
+        subject: str = Field(..., description="Email subject"),
+        body: str = Field(..., description="Plain-text email body"),
+        cc: Optional[str] = Field(default="", description="Optional comma-separated CC recipients"),
         bcc: str = "",
     ) -> SendMessageToolResponse:
-        """Send a plain-text email.
-
-        Args:
-            oauth_token: OAuth credentials object with token fields.
-            to: Recipient email address.
-            subject: Email subject.
-            body: Plain-text email body.
-            cc: Optional comma-separated CC recipients.
-            bcc: Optional comma-separated BCC recipients.
-
+        """
         Returns:
             Delivery status with sent message ID/thread ID or error.
         """
@@ -137,23 +120,14 @@ def register_tools(mcp: FastMCP) -> None:
         description="Send an email message with file attachments",
     )
     def send_message_with_attachment(
-        oauth_token: OAuthTokenData,
-        to: str,
-        subject: str,
-        body: str,
-        attachment_path: str,
-        cc: str = "",
+        oauth_token: OAuthTokenData  = Field(..., description="OAuth token"),
+        to: str = Field(..., description="Recipient email address"),
+        subject: str = Field(..., description="Email subject"),
+        body: str = Field(..., description="Plain-text email body"),
+        attachment_path: str = Field(..., description="Local path to file attachment"),
+        cc: Optional[str] = Field(default="", description="Optional comma-separated CC recipients"),
     ) -> SendMessageToolResponse:
-        """Send an email with one attachment file.
-
-        Args:
-            oauth_token: OAuth credentials object with token fields.
-            to: Recipient email address.
-            subject: Email subject.
-            body: Plain-text email body.
-            attachment_path: Local path to file attachment.
-            cc: Optional comma-separated CC recipients.
-
+        """
         Returns:
             Delivery status with sent message ID/thread ID or error.
         """
@@ -207,15 +181,11 @@ def register_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(name="reply_to_message", description="Reply to an existing email message")
     def reply_to_message(
-        oauth_token: OAuthTokenData, message_id: str, body: str
+        oauth_token: OAuthTokenData  = Field(..., description="OAuth token"),
+        message_id: str = Field(..., description="Original Gmail message ID to reply to"),
+        body: str = Field(..., description="Reply body text")
     ) -> SendMessageToolResponse:
-        """Reply to an existing Gmail message.
-
-        Args:
-            oauth_token: OAuth credentials object with token fields.
-            message_id: Original Gmail message ID to reply to.
-            body: Reply body text.
-
+        """
         Returns:
             Delivery status with reply message ID/thread ID or error.
         """
@@ -267,14 +237,9 @@ def register_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(name="delete_message", description="Delete a message permanently")
     def delete_message(
-        oauth_token: OAuthTokenData, message_id: str
+        oauth_token: OAuthTokenData  = Field(..., description="OAuth token"), message_id: str = Field(..., description="Gmail message ID")
     ) -> IdMessageToolResponse:
-        """Permanently delete a Gmail message.
-
-        Args:
-            oauth_token: OAuth credentials object with token fields.
-            message_id: Gmail message ID.
-
+        """
         Returns:
             Deletion status with target message ID or error.
         """
@@ -290,14 +255,9 @@ def register_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(name="trash_message", description="Move a message to trash")
     def trash_message(
-        oauth_token: OAuthTokenData, message_id: str
+        oauth_token: OAuthTokenData  = Field(..., description="OAuth token"), message_id: str = Field(..., description="Gmail message ID")
     ) -> IdMessageToolResponse:
-        """Move a Gmail message to trash.
-
-        Args:
-            oauth_token: OAuth credentials object with token fields.
-            message_id: Gmail message ID.
-
+        """
         Returns:
             Trash operation status and affected message ID or error.
         """
@@ -316,14 +276,9 @@ def register_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(name="untrash_message", description="Remove a message from trash")
     def untrash_message(
-        oauth_token: OAuthTokenData, message_id: str
+        oauth_token: OAuthTokenData  = Field(..., description="OAuth token"), message_id: str = Field(..., description="Gmail message ID")
     ) -> IdMessageToolResponse:
-        """Restore a trashed Gmail message.
-
-        Args:
-            oauth_token: OAuth credentials object with token fields.
-            message_id: Gmail message ID.
-
+        """
         Returns:
             Restore operation status and affected message ID or error.
         """
@@ -342,19 +297,12 @@ def register_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(name="modify_message_labels", description="Add or remove labels from a message")
     def modify_message_labels(
-        oauth_token: OAuthTokenData,
-        message_id: str,
-        add_labels: list[str] = [],
-        remove_labels: list[str] = [],
+        oauth_token: OAuthTokenData  = Field(..., description="OAuth token"),
+        message_id: str = Field(..., description="Gmail message ID"),
+        add_labels: list[str] = Field(default_factory=list, description="Label IDs to add"),
+        remove_labels: list[str] = Field(default_factory=list, description="Label IDs to remove"),
     ) -> ModifyLabelsToolResponse:
-        """Add and/or remove labels from a message.
-
-        Args:
-            oauth_token: OAuth credentials object with token fields.
-            message_id: Gmail message ID.
-            add_labels: Label IDs to add.
-            remove_labels: Label IDs to remove.
-
+        """
         Returns:
             Label modification status, message ID, current labels, or error.
         """
@@ -383,12 +331,8 @@ def register_tools(mcp: FastMCP) -> None:
             return {"error": str(e)}
 
     @mcp.tool(name="list_labels", description="Get all labels in the user's mailbox")
-    def list_labels(oauth_token: OAuthTokenData) -> LabelsListToolResponse:
-        """List all labels in the mailbox.
-
-        Args:
-            oauth_token: OAuth credentials object with token fields.
-
+    def list_labels(oauth_token: OAuthTokenData  = Field(..., description="OAuth token")) -> LabelsListToolResponse:
+        """
         Returns:
             Label count and label objects or error.
         """
@@ -405,21 +349,12 @@ def register_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(name="create_label", description="Create a new label")
     def create_label(
-        oauth_token: OAuthTokenData,
-        name: str,
-        label_list_visibility: str = "labelShow",
-        message_list_visibility: str = "show",
+        oauth_token: OAuthTokenData  = Field(..., description="OAuth token"),
+        name: str = Field(..., description="Label name"),
+        label_list_visibility: str = Field(default="labelShow", description="Label list visibility Common values include `labelShow`, `labelShowIfUnread`, `labelHide`"),
+        message_list_visibility: str = Field(default="show", description="Message list visibility Common values include `show`, `hide`"),
     ) -> CreateLabelToolResponse:
-        """Create a Gmail label.
-
-        Args:
-            oauth_token: OAuth credentials object with token fields.
-            name: Display name of the label.
-            label_list_visibility: Label list visibility. Common values include
-                `labelShow`, `labelShowIfUnread`, `labelHide`.
-            message_list_visibility: Message list visibility. Common values include
-                `show`, `hide`.
-
+        """
         Returns:
             Creation status and created label object or error.
         """
@@ -442,13 +377,8 @@ def register_tools(mcp: FastMCP) -> None:
             return {"error": str(e)}
 
     @mcp.tool(name="delete_label", description="Delete a label")
-    def delete_label(oauth_token: OAuthTokenData, label_id: str) -> IdMessageToolResponse:
-        """Delete a Gmail label.
-
-        Args:
-            oauth_token: OAuth credentials object with token fields.
-            label_id: Gmail label ID.
-
+    def delete_label(oauth_token: OAuthTokenData  = Field(..., description="OAuth token"), label_id: str = Field(..., description="Label ID to delete") ) -> IdMessageToolResponse:
+        """
         Returns:
             Deletion status with label ID or error.
         """
@@ -464,15 +394,9 @@ def register_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(name="search_messages", description="Search messages using Gmail search syntax")
     def search_messages(
-        oauth_token: OAuthTokenData, query: str, max_results: int = 10
+        oauth_token: OAuthTokenData  = Field(..., description="OAuth token"), query: str = Field(..., description="Search query e.g. 'from:example@x.com' "), max_results: int = Field(default=10, description="Maximum results to return, server caps at 500")
     ) -> SearchMessagesToolResponse:
-        """Search messages using Gmail query syntax.
-
-        Args:
-            oauth_token: OAuth credentials object with token fields.
-            query: Gmail search query (e.g., `from:example@x.com is:unread`).
-            max_results: Maximum messages to return (server caps at 500).
-
+        """
         Returns:
             Match count, message stubs, estimate, or error.
         """
@@ -501,14 +425,9 @@ def register_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(name="mark_as_read", description="Mark a message as read")
     def mark_as_read(
-        oauth_token: OAuthTokenData, message_id: str
+        oauth_token: OAuthTokenData  = Field(..., description="OAuth token"), message_id: str = Field(..., description="Message ID to mark as read")
     ) -> IdMessageToolResponse:
-        """Mark a message as read by removing `UNREAD` label.
-
-        Args:
-            oauth_token: OAuth credentials object with token fields.
-            message_id: Gmail message ID.
-
+        """
         Returns:
             Operation status and message ID or error.
         """
@@ -534,14 +453,9 @@ def register_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(name="mark_as_unread", description="Mark a message as unread")
     def mark_as_unread(
-        oauth_token: OAuthTokenData, message_id: str
+        oauth_token: OAuthTokenData  = Field(..., description="OAuth token"), message_id: str = Field(..., description=" Gmail Message ID to mark as unread")
     ) -> IdMessageToolResponse:
-        """Mark a message as unread by adding `UNREAD` label.
-
-        Args:
-            oauth_token: OAuth credentials object with token fields.
-            message_id: Gmail message ID.
-
+        """
         Returns:
             Operation status and message ID or error.
         """
@@ -567,16 +481,9 @@ def register_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(name="get_thread", description="Get an entire email thread")
     def get_thread(
-        oauth_token: OAuthTokenData, thread_id: str, format: str = "full"
+        oauth_token: OAuthTokenData  = Field(..., description="OAuth token"), thread_id: str = Field(..., description="Gmail Thread ID"), format: str = Field(default="full", description="Thread message format. Common values: 'minimal', 'full', 'raw', 'metadata'")
     ) -> ApiObjectResponse:
-        """Retrieve a full Gmail thread.
-
-        Args:
-            oauth_token: OAuth credentials object with token fields.
-            thread_id: Gmail thread ID.
-            format: Thread message format. Common values: `minimal`, `full`, `raw`,
-                `metadata`.
-
+        """
         Returns:
             Thread object with messages or error.
         """
@@ -596,14 +503,9 @@ def register_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(name="list_drafts", description="List draft messages")
     def list_drafts(
-        oauth_token: OAuthTokenData, max_results: int = 10
+        oauth_token: OAuthTokenData  = Field(..., description="OAuth token"), max_results: int = Field(default=10, description="Maximum drafts to return, server caps at 500")
     ) -> DraftsListToolResponse:
-        """List draft messages.
-
-        Args:
-            oauth_token: OAuth credentials object with token fields.
-            max_results: Maximum drafts to return (server caps at 500).
-
+        """
         Returns:
             Draft count and draft stubs or error.
         """
@@ -628,15 +530,9 @@ def register_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(name="create_draft", description="Create a draft message")
     def create_draft(
-        oauth_token: OAuthTokenData, to: str, subject: str, body: str
+        oauth_token: OAuthTokenData  = Field(..., description="OAuth token"), to: str = Field(..., description="Recipient email address"), subject: str = Field(..., description="Draft subject"), body: str = Field(..., description="Draft body text")
     ) -> CreateDraftToolResponse:
-        """Create a new draft email.
-
-        Args:
-            oauth_token: OAuth credentials object with token fields.
-            to: Recipient email address.
-            subject: Draft subject.
-            body: Draft body text.
+        """
 
         Returns:
             Draft creation status and draft ID or error.
