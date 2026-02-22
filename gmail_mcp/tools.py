@@ -28,6 +28,14 @@ logger = logging.getLogger("gmail-mcp-server")
 def register_tools(mcp: FastMCP) -> None:
     @mcp.tool(name="get_profile", description="Get the user's Gmail profile information")
     def get_profile(oauth_token: OAuthTokenData) -> ApiObjectResponse:
+        """Get authenticated Gmail profile information.
+
+        Args:
+            oauth_token: OAuth credentials object with token fields.
+
+        Returns:
+            Gmail profile object (e.g., email address, message/thread totals) or error.
+        """
         logger.info("Executing get_profile")
         try:
             service = get_service(oauth_token)
@@ -44,6 +52,17 @@ def register_tools(mcp: FastMCP) -> None:
     def get_message(
         oauth_token: OAuthTokenData, message_id: str, format: str = "full"
     ) -> ApiObjectResponse:
+        """Get a message by Gmail message ID.
+
+        Args:
+            oauth_token: OAuth credentials object with token fields.
+            message_id: Gmail message ID.
+            format: Gmail message format. Common values: `minimal`, `full`, `raw`,
+                `metadata`.
+
+        Returns:
+            Gmail message object in requested format or error.
+        """
         logger.info(f"Executing get_message for ID: {message_id}")
         try:
             service = get_service(oauth_token)
@@ -68,6 +87,19 @@ def register_tools(mcp: FastMCP) -> None:
         cc: str = "",
         bcc: str = "",
     ) -> SendMessageToolResponse:
+        """Send a plain-text email.
+
+        Args:
+            oauth_token: OAuth credentials object with token fields.
+            to: Recipient email address.
+            subject: Email subject.
+            body: Plain-text email body.
+            cc: Optional comma-separated CC recipients.
+            bcc: Optional comma-separated BCC recipients.
+
+        Returns:
+            Delivery status with sent message ID/thread ID or error.
+        """
         logger.info(f"Executing send_message to: {to}")
         try:
             service = get_service(oauth_token)
@@ -112,6 +144,19 @@ def register_tools(mcp: FastMCP) -> None:
         attachment_path: str,
         cc: str = "",
     ) -> SendMessageToolResponse:
+        """Send an email with one attachment file.
+
+        Args:
+            oauth_token: OAuth credentials object with token fields.
+            to: Recipient email address.
+            subject: Email subject.
+            body: Plain-text email body.
+            attachment_path: Local path to file attachment.
+            cc: Optional comma-separated CC recipients.
+
+        Returns:
+            Delivery status with sent message ID/thread ID or error.
+        """
         logger.info(f"Executing send_message_with_attachment to: {to}")
         try:
             service = get_service(oauth_token)
@@ -164,6 +209,16 @@ def register_tools(mcp: FastMCP) -> None:
     def reply_to_message(
         oauth_token: OAuthTokenData, message_id: str, body: str
     ) -> SendMessageToolResponse:
+        """Reply to an existing Gmail message.
+
+        Args:
+            oauth_token: OAuth credentials object with token fields.
+            message_id: Original Gmail message ID to reply to.
+            body: Reply body text.
+
+        Returns:
+            Delivery status with reply message ID/thread ID or error.
+        """
         logger.info(f"Executing reply_to_message for ID: {message_id}")
         try:
             service = get_service(oauth_token)
@@ -214,6 +269,15 @@ def register_tools(mcp: FastMCP) -> None:
     def delete_message(
         oauth_token: OAuthTokenData, message_id: str
     ) -> IdMessageToolResponse:
+        """Permanently delete a Gmail message.
+
+        Args:
+            oauth_token: OAuth credentials object with token fields.
+            message_id: Gmail message ID.
+
+        Returns:
+            Deletion status with target message ID or error.
+        """
         logger.info(f"Executing delete_message for ID: {message_id}")
         try:
             service = get_service(oauth_token)
@@ -228,6 +292,15 @@ def register_tools(mcp: FastMCP) -> None:
     def trash_message(
         oauth_token: OAuthTokenData, message_id: str
     ) -> IdMessageToolResponse:
+        """Move a Gmail message to trash.
+
+        Args:
+            oauth_token: OAuth credentials object with token fields.
+            message_id: Gmail message ID.
+
+        Returns:
+            Trash operation status and affected message ID or error.
+        """
         logger.info(f"Executing trash_message for ID: {message_id}")
         try:
             service = get_service(oauth_token)
@@ -245,6 +318,15 @@ def register_tools(mcp: FastMCP) -> None:
     def untrash_message(
         oauth_token: OAuthTokenData, message_id: str
     ) -> IdMessageToolResponse:
+        """Restore a trashed Gmail message.
+
+        Args:
+            oauth_token: OAuth credentials object with token fields.
+            message_id: Gmail message ID.
+
+        Returns:
+            Restore operation status and affected message ID or error.
+        """
         logger.info(f"Executing untrash_message for ID: {message_id}")
         try:
             service = get_service(oauth_token)
@@ -265,6 +347,17 @@ def register_tools(mcp: FastMCP) -> None:
         add_labels: list[str] = [],
         remove_labels: list[str] = [],
     ) -> ModifyLabelsToolResponse:
+        """Add and/or remove labels from a message.
+
+        Args:
+            oauth_token: OAuth credentials object with token fields.
+            message_id: Gmail message ID.
+            add_labels: Label IDs to add.
+            remove_labels: Label IDs to remove.
+
+        Returns:
+            Label modification status, message ID, current labels, or error.
+        """
         logger.info(f"Executing modify_message_labels for ID: {message_id}")
         try:
             service = get_service(oauth_token)
@@ -291,6 +384,14 @@ def register_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(name="list_labels", description="Get all labels in the user's mailbox")
     def list_labels(oauth_token: OAuthTokenData) -> LabelsListToolResponse:
+        """List all labels in the mailbox.
+
+        Args:
+            oauth_token: OAuth credentials object with token fields.
+
+        Returns:
+            Label count and label objects or error.
+        """
         logger.info("Executing list_labels")
         try:
             service = get_service(oauth_token)
@@ -309,6 +410,19 @@ def register_tools(mcp: FastMCP) -> None:
         label_list_visibility: str = "labelShow",
         message_list_visibility: str = "show",
     ) -> CreateLabelToolResponse:
+        """Create a Gmail label.
+
+        Args:
+            oauth_token: OAuth credentials object with token fields.
+            name: Display name of the label.
+            label_list_visibility: Label list visibility. Common values include
+                `labelShow`, `labelShowIfUnread`, `labelHide`.
+            message_list_visibility: Message list visibility. Common values include
+                `show`, `hide`.
+
+        Returns:
+            Creation status and created label object or error.
+        """
         logger.info(f"Executing create_label: {name}")
         try:
             service = get_service(oauth_token)
@@ -329,6 +443,15 @@ def register_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(name="delete_label", description="Delete a label")
     def delete_label(oauth_token: OAuthTokenData, label_id: str) -> IdMessageToolResponse:
+        """Delete a Gmail label.
+
+        Args:
+            oauth_token: OAuth credentials object with token fields.
+            label_id: Gmail label ID.
+
+        Returns:
+            Deletion status with label ID or error.
+        """
         logger.info(f"Executing delete_label for ID: {label_id}")
         try:
             service = get_service(oauth_token)
@@ -343,6 +466,16 @@ def register_tools(mcp: FastMCP) -> None:
     def search_messages(
         oauth_token: OAuthTokenData, query: str, max_results: int = 10
     ) -> SearchMessagesToolResponse:
+        """Search messages using Gmail query syntax.
+
+        Args:
+            oauth_token: OAuth credentials object with token fields.
+            query: Gmail search query (e.g., `from:example@x.com is:unread`).
+            max_results: Maximum messages to return (server caps at 500).
+
+        Returns:
+            Match count, message stubs, estimate, or error.
+        """
         logger.info(f"Executing search_messages with query: {query}")
         try:
             service = get_service(oauth_token)
@@ -370,6 +503,15 @@ def register_tools(mcp: FastMCP) -> None:
     def mark_as_read(
         oauth_token: OAuthTokenData, message_id: str
     ) -> IdMessageToolResponse:
+        """Mark a message as read by removing `UNREAD` label.
+
+        Args:
+            oauth_token: OAuth credentials object with token fields.
+            message_id: Gmail message ID.
+
+        Returns:
+            Operation status and message ID or error.
+        """
         logger.info(f"Executing mark_as_read for ID: {message_id}")
         try:
             service = get_service(oauth_token)
@@ -394,6 +536,15 @@ def register_tools(mcp: FastMCP) -> None:
     def mark_as_unread(
         oauth_token: OAuthTokenData, message_id: str
     ) -> IdMessageToolResponse:
+        """Mark a message as unread by adding `UNREAD` label.
+
+        Args:
+            oauth_token: OAuth credentials object with token fields.
+            message_id: Gmail message ID.
+
+        Returns:
+            Operation status and message ID or error.
+        """
         logger.info(f"Executing mark_as_unread for ID: {message_id}")
         try:
             service = get_service(oauth_token)
@@ -418,6 +569,17 @@ def register_tools(mcp: FastMCP) -> None:
     def get_thread(
         oauth_token: OAuthTokenData, thread_id: str, format: str = "full"
     ) -> ApiObjectResponse:
+        """Retrieve a full Gmail thread.
+
+        Args:
+            oauth_token: OAuth credentials object with token fields.
+            thread_id: Gmail thread ID.
+            format: Thread message format. Common values: `minimal`, `full`, `raw`,
+                `metadata`.
+
+        Returns:
+            Thread object with messages or error.
+        """
         logger.info(f"Executing get_thread for ID: {thread_id}")
         try:
             service = get_service(oauth_token)
@@ -436,6 +598,15 @@ def register_tools(mcp: FastMCP) -> None:
     def list_drafts(
         oauth_token: OAuthTokenData, max_results: int = 10
     ) -> DraftsListToolResponse:
+        """List draft messages.
+
+        Args:
+            oauth_token: OAuth credentials object with token fields.
+            max_results: Maximum drafts to return (server caps at 500).
+
+        Returns:
+            Draft count and draft stubs or error.
+        """
         logger.info("Executing list_drafts")
         try:
             service = get_service(oauth_token)
@@ -459,6 +630,17 @@ def register_tools(mcp: FastMCP) -> None:
     def create_draft(
         oauth_token: OAuthTokenData, to: str, subject: str, body: str
     ) -> CreateDraftToolResponse:
+        """Create a new draft email.
+
+        Args:
+            oauth_token: OAuth credentials object with token fields.
+            to: Recipient email address.
+            subject: Draft subject.
+            body: Draft body text.
+
+        Returns:
+            Draft creation status and draft ID or error.
+        """
         logger.info(f"Executing create_draft to: {to}")
         try:
             service = get_service(oauth_token)
